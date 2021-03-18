@@ -1,5 +1,5 @@
 # dumbbells
-![ci-status](https://github.com/donatastamosauskas/dumbbells/actions/workflows/python-app/badge.svg)  
+![ci-status](https://github.com/donatastamosauskas/dumbbells/actions/workflows/python-app.yml/badge.svg)  
 DQN playing games  
 
 ## Repository setup:
