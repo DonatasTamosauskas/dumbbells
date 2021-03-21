@@ -1,4 +1,3 @@
-import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
@@ -13,8 +12,8 @@ class DQN(nn.Module):
         self.conv3 = nn.Conv2d(32, 32, kernel_size=5, stride=2)
         self.bn3 = nn.BatchNorm2d(32)
 
-        convw = self.conv2d_size_out(conv2d_size_out(conv2d_size_out(w)))
-        convh = self.conv2d_size_out(conv2d_size_out(conv2d_size_out(h)))
+        convw = self.conv2d_size_out(self.conv2d_size_out(self.conv2d_size_out(w)))
+        convh = self.conv2d_size_out(self.conv2d_size_out(self.conv2d_size_out(h)))
         linear_input_size = convw * convh * 32
         self.head = nn.Linear(linear_input_size, outputs)
 

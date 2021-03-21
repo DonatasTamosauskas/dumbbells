@@ -1,5 +1,5 @@
 from dumbbells.data import *
 
 
-def test_import:
+def test_import():
     assert True
