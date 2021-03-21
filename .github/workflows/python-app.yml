@@ -22,15 +22,15 @@ jobs:
         python-version: 3.8
     - name: Python Poetry Action
       uses: abatilo/actions-poetry@v2.1.0
-	- name: Cache
+    - name: Cache
       uses: actions/cache@v2
       with:
         path: ~/.cache/pypoetry/virtualenvs
       	key: ${{ runner.os }}-poetry-${{ hashFiles('poetry.lock') }}
     - name: Install dependencies
-	  run: |
-		poetry install
-		poetry shell
+      run: |
+        poetry install
+        poetry shell
     - name: Lint with flake8
       run: |
         # stop the build if there are Python syntax errors or undefined names
