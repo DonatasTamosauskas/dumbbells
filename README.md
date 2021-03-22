@@ -9,7 +9,7 @@ To set up the project environment use [Poetry](https://python-poetry.org/docs/) 
 
 Notebook environment can be launched with:
 ```
-poetry shell  # Must have fist executed `poetry install`
+poetry shell  # Must have first executed `poetry install`
 jupyter lab
 ```
 
