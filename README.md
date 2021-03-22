@@ -4,5 +4,12 @@ DQN playing games
 
 ## Repository setup:
 Follow the tutorial [here](https://pre-commit.com/#install) to set up git pre-commit hooks. These will automatically format the code wiht [balck](https://github.com/psf/black) formatter and check for syntax errors.  
-Any new Python packges used should be added to `requirements.txt` file.  
+
+To set up the project environment use [Poetry](https://python-poetry.org/docs/) dependency manager  
+
+Notebook environment can be launched with:
+```
+poetry shell  # Must have first executed `poetry install`
+jupyter lab
+```
 
