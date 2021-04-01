@@ -1,12 +1,16 @@
 import gym
-from torch.utils.data import Dataset, DataLoader
+import torch
+from torch.utils.data import Dataset as Ds, DataLoader
 
-class Dataset:
+
+class Dataset(Ds):
 
     # Constructor, with the environment and memory_size specified
     def __init__(self, game, memory_size):
         self.env = gym.make(game)
         self.memory_size = memory_size
+        self.memory = []
+        self.position = 0
 
         # For the environment "MountainCar-v0", there are 3 actions available:
         # 0: Accelerate to the left
@@ -32,13 +36,28 @@ class Dataset:
     # Given an action, take that action and returns the following tuple:
     # State, Reward, Done, {}
     def step(self, action):
+        prev_state = self.get_state()
         # Take the action
         result = self.env.step(action)
-        # Update the state
+        # Update the state and memory
         self.state_space = result[0]
+        self.pushMem(prev_state, action, result[1], self.get_state())
         # Return the result of the action
         return result
 
-    # Returns image and label -> action, reward, next state
-    def __getitem__(self):
+    # Helper function to push to memory
+    def pushMem(self, prev_state, action, reward, next_state):
+        if len(self.memory) < self.memory_size:
+            self.memory.append(None)
+        self.memory[self.position].append(prev_state, action, reward, next_state)
+        self.position = (self.position + 1) % self.capacity
         return
+
+    # Returns image and label -> (state, action, reward, next state)
+    def __getitem__(self, idx):
+        if torch.is_tensor(idx):
+            idx = idx.tolist()
+        return self.memory[idx]
+
+    def __len__(self):
+        return len(self.memory)
