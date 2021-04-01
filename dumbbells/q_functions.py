@@ -1,3 +1,4 @@
+from __future__ import annotations
 from typing import Union
 
 import torch
@@ -92,7 +93,7 @@ class DnnQFunction(BaseQFunction):
 
         self.optimizer.zero_grad()
         loss.backward()
-        for param in policy_net.parameters():
+        for param in self.arch.parameters():
             param.grad.data.clamp_(-1, 1)
         self.optimizer.step()
 
