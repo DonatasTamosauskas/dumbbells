@@ -31,7 +31,13 @@ class BaseQFunction:
 
         raise NotImplementedError()
 
-    def train(self, states: torch.tensor, actions: torch.tensor, rewards: torch.tensor, q_next_states: torch.tensor):
+    def train(
+        self,
+        states: torch.tensor,
+        actions: torch.tensor,
+        rewards: torch.tensor,
+        q_next_states: torch.tensor,
+    ):
         """Update model from a batch of actions
 
         Args:
@@ -51,17 +57,24 @@ class BaseQFunction:
         """
 
         raise NotImplementedError()
-    
+
 
 class DnnQFunction(BaseQFunction):
-    def __init__(self, arch: torch.nn.Module, gamma: float, optim: Union[torch.optim, None] = None):
+    def __init__(
+        self,
+        arch: torch.nn.Module,
+        gamma: float,
+        optim: Union[torch.optim, None] = None,
+    ):
         self.arch = arch
         self.gamma = gamma
-        self.optimizer = torch.optim.RMSprop(self.arch.parameters()) if optim is None else optim
+        self.optimizer = (
+            torch.optim.RMSprop(self.arch.parameters()) if optim is None else optim
+        )
 
     def predict(self, states):
         with torch.no_grad():
-            return self.arch(states).max(dim=-1)[1].view(1,1)
+            return self.arch(states).max(dim=-1)[1].view(1, 1)
 
     def max_expected_reward(self, states):
         with torch.no_grad():
@@ -73,8 +86,10 @@ class DnnQFunction(BaseQFunction):
         state_action_values = self.arch(states).gather(1, actions)
         expected_state_action_values = (q_next_states * self.gamma) + rewards
 
-        loss = F.smooth_l1_loss(state_action_values, expected_state_action_values.unsqueeze(1))
-        
+        loss = F.smooth_l1_loss(
+            state_action_values, expected_state_action_values.unsqueeze(1)
+        )
+
         self.optimizer.zero_grad()
         loss.backward()
         for param in policy_net.parameters():
@@ -86,4 +101,3 @@ class DnnQFunction(BaseQFunction):
 
     def update(self, q_function: DnnQFunction):
         self.arch.load_state_dict(q_function.copy_weights())
-
