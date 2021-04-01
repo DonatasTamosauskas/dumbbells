@@ -5,16 +5,51 @@ import torch.nn.functional as F
 
 
 class BaseQFunction:
-    def predict(self, state):
+    """Implements the q-function"""
+
+    def predict(self, states: torch.tensor) -> torch.tensor:
+        """Predicts the next action
+
+        Args:
+            states: tensor batch representing the env states
+
+        Returns:
+            tensor batch of actions
+        """
+
         raise NotImplementedError()
 
-    def max_expected_reward(self, state):
+    def max_expected_reward(self, states: torch.tensor) -> torch.tensor:
+        """Calculate the max expected rewards given states
+
+        Args:
+            states: tensor batch representing the env states
+
+        Returns:
+            tensor batch of max expected rewards
+        """
+
         raise NotImplementedError()
 
-    def train(state, action, reward, q_next_state):
+    def train(self, states: torch.tensor, actions: torch.tensor, rewards: torch.tensor, q_next_states: torch.tensor):
+        """Update model from a batch of actions
+
+        Args:
+            states: tensor batch of env states
+            actions: tensor batch of actions taken
+            rewards: tensor batch of rewards received
+            q_next_states: tensor batch of max expected rewards from the next state
+        """
+
         raise NotImplementedError()
 
     def update(self, q_function: BaseQFunction):
+        """Update models from another q-function
+
+        Args:
+            q_function: the BaseQFunction to update from
+        """
+
         raise NotImplementedError()
     
 
