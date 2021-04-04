@@ -1,61 +1,95 @@
 import gym
-
-# TEMPORARY, ONLY USED TO MAKE THIS TEST WORK FOR NOW
-import sys
-
-sys.path.append("../dumbbells")
-from dumbbells.Agent import Agent
+from dumbbells.agent import Agent
 
 
-def testQAgent():
-    print("\nStarting testQAgent")
+def test_init():
+    """Tests initialization of Agent"""
 
     env = gym.make("MountainCar-v0")
     state_space = env.observation_space
     action_space = env.action_space
     reward_space = [-1, 0]
 
+    eps_start = 0.9
+    eps_end = 0.05
+    eps_decay = 200
+
     current_state = env.reset()
     myQ = q_functions(current_state)
-    # myAgent = Agent.Agent(myQ,action_space,state_space,reward_space,verbose = True)
-    myAgent = Agent(myQ, action_space, state_space, reward_space, verbose=True)
+    my_agent = Agent(
+        myQ, action_space, state_space, reward_space, eps_start, eps_end, eps_decay
+    )
 
-    for t in range(10):
-        # env.render()
-        myAction = myAgent.action(current_state)
-        current_state, reward, done, __ = env.step(myAction)
-        if done:
-            print("Finished after {} timesteps".format(t + 1))
-            break
-    env.close()
-    print("Completed testQAgent")
+    assert my_agent.state_space == env.observation_space
+    assert my_agent.action_space == env.action_space
+    assert my_agent.reward_space == [-1, 0]
+    assert my_agent.eps_start == eps_start
+    assert my_agent.eps_end == eps_end
+    assert my_agent.eps_decay == eps_decay
+    assert my_agent.steps_done == 0
+
+    # Technically an optional argument, but worth checking nonetheless
+    assert my_agent.verbose == False
 
 
-def testRandAgent():
-    print("\nStarting testRandAgent")
+def test_q_action():
+    """Tests that action can be taken by Q Function"""
 
     env = gym.make("MountainCar-v0")
     state_space = env.observation_space
     action_space = env.action_space
     reward_space = [-1, 0]
 
-    current_state = env.reset()
-    myQ = q_functions(current_state)
-    # myAgent = Agent.Agent(myQ,action_space,state_space,reward_space,verbose = True)
-    myAgent = Agent(myQ, action_space, state_space, reward_space, verbose=True)
+    eps_start = 0
+    eps_end = 2
+    eps_decay = 1
 
-    for t in range(10):
-        # env.render()
-        myAction = myAgent.random_action()
-        current_state, reward, done, __ = env.step(myAction)
+    current_state = env.reset()
+    my_q = q_functions(current_state)
+    my_agent = Agent(
+        my_q, action_space, state_space, reward_space, eps_start, eps_end, eps_decay
+    )
+
+    for t in range(200):
+        my_action = my_agent.action(current_state)
+        assert (my_q.old_state == current_state).all()
+        current_state, reward, done, __ = env.step(my_action)
         if done:
-            print("Finished after {} timesteps".format(t + 1))
             break
-    env.close()
-    print("Completed testRandAgent")
+
+    assert my_agent.steps_done == 200
+
+
+def test_random_action():
+    """Tests that action can be taken randomly"""
+
+    env = gym.make("MountainCar-v0")
+    state_space = env.observation_space
+    action_space = env.action_space
+    reward_space = [-1, 0]
+
+    eps_start = 0.9
+    eps_end = 0.05
+    eps_decay = 200
+
+    current_state = env.reset()
+    my_q = q_functions(current_state)
+    my_agent = Agent(
+        my_q, action_space, state_space, reward_space, eps_start, eps_end, eps_decay
+    )
+
+    for t in range(200):
+        my_action = my_agent.random_action()
+        current_state, reward, done, __ = env.step(my_action)
+        if done:
+            break
+
+    assert my_agent.steps_done == 200
 
 
 class q_functions:
+    """Temporary Q-Function for testing. Returns constant action of 1"""
+
     def __init__(self, current_state):
         self.old_state = current_state
         self.last_action = 1
@@ -63,9 +97,3 @@ class q_functions:
     def predict(self, current_state):
         self.old_state = current_state
         return self.last_action
-
-
-if __name__ == "__main__":
-    testQAgent()
-    testRandAgent()
-    print("\n************************\nCompleted All Test\n************************\n")
