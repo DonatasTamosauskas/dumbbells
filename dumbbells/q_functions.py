@@ -75,11 +75,11 @@ class DnnQFunction(BaseQFunction):
 
     def predict(self, states):
         with torch.no_grad():
-            return self.arch(states).max(dim=-1)[1].view(1, 1)
+            return self.arch(states).max(dim=-1)[1].view(-1, 1)
 
     def max_expected_reward(self, states):
         with torch.no_grad():
-            return self.arch(states).max(dim=-1)[0]
+            return self.arch(states).max(dim=-1)[0].view(-1, 1)
 
     def train(self, states, actions, rewards, q_next_states):
         # TODO: Manage the special cases of end states. The pytorch example sets them to 0 value
