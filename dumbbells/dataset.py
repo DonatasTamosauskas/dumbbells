@@ -65,11 +65,11 @@ class Dataset(Ds):
         result = self.env.step(action)
         # Update the state and memory
         self.state_space = result[0]
-        self.pushMem(prev_state, action, result[1], self.get_state())
+        self.push_mem(prev_state, action, result[1], self.get_state())
         # Return the result of the action
         return result
 
-    def pushMem(self, prev_state, action, reward, next_state):
+    def push_mem(self, prev_state, action, reward, next_state):
         """Helper function to push an image and label to memory
 
         Args:
@@ -84,7 +84,6 @@ class Dataset(Ds):
             self.memory.append(None)
         self.memory[self.position] = (prev_state, action, reward, next_state)
         self.position = (self.position + 1) % self.memory_size
-        return
 
     def __getitem__(self, idx):
         """Returns the image and label stored in memory at the given index
@@ -108,3 +107,16 @@ class Dataset(Ds):
             Number of image / label pairs currently stored
         """
         return len(self.memory)
+
+    def reset(self):
+        """Resets the environment without clearing the memory
+
+        Args: None
+
+        Returns:
+            Observations after resetting (the state_space)
+        """
+        result = self.env.reset()
+        # Update the current state space
+        self.state_space = result[0]
+        return result
