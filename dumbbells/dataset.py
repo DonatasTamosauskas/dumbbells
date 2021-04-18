@@ -1,6 +1,11 @@
 import gym
 import torch
-from torch.utils.data import Dataset as Ds, DataLoader
+import os
+
+os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
+from matplotlib import animation
+import matplotlib.pyplot as plt
+from torch.utils.data import Dataset as Ds
 
 
 class Dataset(Ds):
@@ -21,6 +26,7 @@ class Dataset(Ds):
         self.env = gym.make(game)
         self.memory_size = memory_size
         self.memory = []
+        self.frames = []
         self.position = 0
 
         # For the environment "MountainCar-v0", there are 3 actions available:
@@ -66,6 +72,8 @@ class Dataset(Ds):
         # Update the state and memory
         self.state_space = result[0]
         self.push_mem(prev_state, action, result[1], self.get_state())
+        # Store this frame to produce a gif later on
+        self.frames.append(self.env.render(mode="rgb_array"))
         # Return the result of the action
         return result
 
@@ -120,3 +128,34 @@ class Dataset(Ds):
         # Update the current state space
         self.state_space = result[0]
         return result
+
+    def save_frames_as_gif(self, path="./", filename="gym_animation.gif"):
+        """Produces a gif of the every action that has been taken by the agent on the environment from the
+        beginning until called
+
+        Args:
+            path: Optional, file path where the gif will be saved relative to the directory calling this method.
+                Default is the same directory as the caller.
+            filename: Optional, file name of the gif to be saved. Default is "gym_animation.gif"
+
+        Returns:
+            None (though it produces a saved gif)
+
+        """
+        self.env.close()
+        # Mess with this to change frame size
+        plt.figure(
+            figsize=(self.frames[0].shape[1] / 72.0, self.frames[0].shape[0] / 72.0),
+            dpi=72,
+        )
+
+        patch = plt.imshow(self.frames[0])
+        plt.axis("off")
+
+        def animate(i):
+            patch.set_data(self.frames[i])
+
+        anim = animation.FuncAnimation(
+            plt.gcf(), animate, frames=len(self.frames), interval=50
+        )
+        anim.save(path + filename, writer="imagemagick", fps=60)
