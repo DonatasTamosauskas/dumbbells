@@ -1,8 +1,5 @@
 import gym
 import torch
-import os
-
-os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 from matplotlib import animation
 import matplotlib.pyplot as plt
 from torch.utils.data import Dataset as Ds
