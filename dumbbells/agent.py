@@ -96,3 +96,6 @@ class Agent:
     def train_q(self, states, actions, rewards, next_states):
         max_expected = self.q_offline.max_expected_reward(next_states)
         return self.q.train(states, actions, rewards, max_expected)
+
+    def update_offline(self):
+        self.q_offline.update(self.q)

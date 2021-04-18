@@ -7,9 +7,10 @@ from tqdm import tqdm
 
 
 class Trainer:
-    def __init__(self, dataset, agent, batch_size=32):
+    def __init__(self, dataset, agent, offline_update=10, batch_size=32):
         self.dataset = dataset
         self.agent = agent
+        self.offline_update = offline_update
         self.batch_size = batch_size
 
         self.ep_durations = []
@@ -56,6 +57,9 @@ class Trainer:
                 batch = next(dl)
 
             loss = self.agent.train_q(*batch)
+
+            if ep % self.offline_update:
+                self.agent.update_offline()
 
             self.ep_durations.append(time_steps)
             self.rewards.append(max_reward.item())
