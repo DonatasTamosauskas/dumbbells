@@ -88,9 +88,7 @@ class DnnQFunction(BaseQFunction):
         state_action_values = self.arch(states).gather(1, actions)
         expected_state_action_values = (q_next_states * self.gamma) + rewards
 
-        loss = F.smooth_l1_loss(
-            state_action_values, expected_state_action_values.unsqueeze(1)
-        )
+        loss = F.smooth_l1_loss(state_action_values, expected_state_action_values)
 
         self.optimizer.zero_grad()
         loss.backward()
