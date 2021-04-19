@@ -27,3 +27,14 @@ class DQN(nn.Module):
 
     def conv2d_size_out(size, kernel_size=5, stride=2):
         return (size - (kernel_size - 1) - 1) // stride + 1
+
+
+class FcSimpleDqn(nn.Module):
+    def __init__(self, input_shape, outputs, hidden=32):
+        super().__init__()
+        self.hidden = nn.Linear(input_shape, hidden)
+        self.head = nn.Linear(hidden, outputs)
+
+    def forward(self, x):
+        x = F.relu(self.hidden(x))
+        return self.head(x)

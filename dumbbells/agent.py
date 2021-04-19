@@ -1,5 +1,7 @@
-import numpy as np
 import random
+
+import numpy as np
+import torch
 
 
 class Agent:
@@ -36,6 +38,7 @@ class Agent:
         """
         # Environment and Q function
         self.q = q
+        self.q_offline = q.eval()
         self.action_space = action_space
         self.state_space = state_space
         self.reward_space = reward_space
@@ -64,7 +67,7 @@ class Agent:
 
         if self.verbose:
             print("Random Action: ", rand_action)
-        return rand_action
+        return torch.tensor([[rand_action]])
 
     def action(self, current_state):
         """Selects the best action determined by the Q-Function
@@ -89,3 +92,10 @@ class Agent:
         if self.verbose:
             print("Best Action: ", best_action)
         return best_action
+
+    def train_q(self, states, actions, rewards, next_states):
+        max_expected = self.q_offline.max_expected_reward(next_states)
+        return self.q.train(states, actions, rewards, max_expected)
+
+    def update_offline(self):
+        self.q_offline.update(self.q)
