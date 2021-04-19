@@ -70,20 +70,27 @@ class DnnQFunction(BaseQFunction):
         self.arch = arch
         self.gamma = gamma
         self.optimizer = (
-            torch.optim.RMSprop(self.arch.parameters()) if optim is None else optim
+            torch.optim.RMSprop(self.arch.parameters(), lr=1e-5)
+            if optim is None
+            else optim
         )
 
     def predict(self, states):
+        self.arch.eval()
+
         with torch.no_grad():
             return self.arch(states).max(dim=-1)[1].view(-1, 1)
 
     def max_expected_reward(self, states):
+        self.arch.eval()
+
         with torch.no_grad():
             ans = self.arch(states).max(dim=-1)[0].view(-1, 1)
             return ans
 
     def train(self, states, actions, rewards, q_next_states):
         # TODO: Manage the special cases of end states. The pytorch example sets them to 0 value
+        self.arch.train()
 
         state_action_values = self.arch(states).gather(1, actions)
         expected_state_action_values = (q_next_states * self.gamma) + rewards
