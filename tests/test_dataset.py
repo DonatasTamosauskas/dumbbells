@@ -51,3 +51,6 @@ def test_memory():
     assert image[3][0] == result[0][0]
     assert image[3][1] == result[0][1]
     assert len(dataset) == 2
+
+    # Uncomment this line when you want to save a gif. You can also specify a file path and file name.
+    # dataset.save_frames_as_gif()
