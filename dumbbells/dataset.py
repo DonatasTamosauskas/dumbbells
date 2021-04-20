@@ -88,6 +88,7 @@ class Dataset(Ds):
             self.frames.append(self.env.render(mode="rgb_array"))
 
         # Return the result of the action
+
         return self.get_state(), reward, done
 
     def push_mem(self, prev_state, action, reward, next_state):
@@ -143,8 +144,10 @@ class Dataset(Ds):
         result = self.env.reset()
         # Update the current state space
         self.state_space = torch.tensor(result, dtype=torch.float32)
+
         # Reset our frames
         self.frames = []
+
         return result
 
     def save_frames_as_gif(self, path="./", filename="gym_animation.gif"):

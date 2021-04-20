@@ -1,4 +1,6 @@
 import gym
+import torch
+
 from dumbbells.agent import Agent
 
 
@@ -51,7 +53,7 @@ def test_q_action():
     )
 
     for t in range(200):
-        my_action = my_agent.action(current_state)
+        my_action = my_agent.action(current_state).item()
         assert (my_q.old_state == current_state).all()
         current_state, reward, done, __ = env.step(my_action)
         if done:
@@ -79,7 +81,7 @@ def test_random_action():
     )
 
     for t in range(200):
-        my_action = my_agent.random_action()
+        my_action = my_agent.random_action().item()
         current_state, reward, done, __ = env.step(my_action)
         if done:
             break
@@ -92,8 +94,11 @@ class q_functions:
 
     def __init__(self, current_state):
         self.old_state = current_state
-        self.last_action = 1
+        self.last_action = torch.tensor([[1]], dtype=torch.int)
 
     def predict(self, current_state):
         self.old_state = current_state
         return self.last_action
+
+    def eval(self):
+        return self

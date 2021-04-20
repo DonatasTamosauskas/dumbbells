@@ -79,7 +79,8 @@ class DnnQFunction(BaseQFunction):
 
     def max_expected_reward(self, states):
         with torch.no_grad():
-            return self.arch(states).max(dim=-1)[0].view(-1, 1)
+            ans = self.arch(states).max(dim=-1)[0].view(-1, 1)
+            return ans
 
     def train(self, states, actions, rewards, q_next_states):
         # TODO: Manage the special cases of end states. The pytorch example sets them to 0 value
@@ -87,9 +88,7 @@ class DnnQFunction(BaseQFunction):
         state_action_values = self.arch(states).gather(1, actions)
         expected_state_action_values = (q_next_states * self.gamma) + rewards
 
-        loss = F.smooth_l1_loss(
-            state_action_values, expected_state_action_values.unsqueeze(1)
-        )
+        loss = F.smooth_l1_loss(state_action_values, expected_state_action_values)
 
         self.optimizer.zero_grad()
         loss.backward()
@@ -97,8 +96,14 @@ class DnnQFunction(BaseQFunction):
             param.grad.data.clamp_(-1, 1)
         self.optimizer.step()
 
+        return loss
+
     def copy_weights(self):
         return self.arch.state_dict()
 
     def update(self, q_function: DnnQFunction):
         self.arch.load_state_dict(q_function.copy_weights())
+
+    def eval(self):
+        self.arch = self.arch.eval()
+        return self
