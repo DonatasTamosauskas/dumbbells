@@ -1,3 +1,4 @@
+import numpy as np
 import gym
 import torch
 from matplotlib import animation
@@ -41,7 +42,7 @@ class Dataset(Ds):
         # Car Position: Ranges from -1.2 to 0.6
         # Car Velocity: Ranges from -0.07 to 0.07
         # The car starts at some position between -0.6 to -0.4
-        self.state_space = self.env.reset()
+        self.state_space = torch.tensor(self.env.reset(), dtype=torch.float32)
 
         # For the environment "MountainCar-v0", there are 2 possible rewards:
         # Reward of 0 is awarded if the agent has reached the flag (position 0.5)
@@ -70,10 +71,16 @@ class Dataset(Ds):
         """
         prev_state = self.get_state()
         # Take the action
-        result = self.env.step(action)
+        state, reward, done, info = self.env.step(action)
+        state, reward, done = (
+            torch.tensor(state, dtype=torch.float32),
+            torch.tensor([reward], dtype=torch.float32),
+            torch.tensor([done]),
+        )
         # Update the state and memory
-        self.state_space = result[0]
-        self.push_mem(prev_state, action, result[1], self.get_state())
+        self.state_space = state
+
+        self.push_mem(prev_state, torch.tensor([action]), reward, self.get_state())
 
         # If we initialized this dataset with the capability to produce a gif (only works on local machines!)
         if self.produce_gif:
@@ -81,7 +88,7 @@ class Dataset(Ds):
             self.frames.append(self.env.render(mode="rgb_array"))
 
         # Return the result of the action
-        return result
+        return self.get_state(), reward, done
 
     def push_mem(self, prev_state, action, reward, next_state):
         """Helper function to push an image and label to memory
@@ -135,7 +142,7 @@ class Dataset(Ds):
         """
         result = self.env.reset()
         # Update the current state space
-        self.state_space = result[0]
+        self.state_space = torch.tensor(result, dtype=torch.float32)
         # Reset our frames
         self.frames = []
         return result
@@ -164,10 +171,10 @@ class Dataset(Ds):
         patch = plt.imshow(self.frames[0])
         plt.axis("off")
 
-        def animate(i):
-            patch.set_data(self.frames[i])
-
         anim = animation.FuncAnimation(
-            plt.gcf(), animate, frames=len(self.frames), interval=50
+            plt.gcf(),
+            lambda i: patch.set_data(self.frames[i]),
+            frames=len(self.frames),
+            interval=50,
         )
         anim.save(path + filename, writer="imagemagick", fps=60)
