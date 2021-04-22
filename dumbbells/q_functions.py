@@ -88,12 +88,12 @@ class DnnQFunction(BaseQFunction):
             ans = self.arch(states).max(dim=-1)[0].view(-1, 1)
             return ans
 
-    def train(self, states, actions, rewards, q_next_states):
-        # TODO: Manage the special cases of end states. The pytorch example sets them to 0 value
+    def train(self, states, actions, rewards, q_next_states, dones):
         self.arch.train()
 
         state_action_values = self.arch(states).gather(1, actions)
         expected_state_action_values = (q_next_states * self.gamma) + rewards
+        expected_state_action_values[dones] = rewards[dones]
 
         loss = F.smooth_l1_loss(state_action_values, expected_state_action_values)
 

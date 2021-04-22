@@ -1,4 +1,5 @@
 import random
+from copy import deepcopy
 
 import numpy as np
 import torch
@@ -38,7 +39,7 @@ class Agent:
         """
         # Environment and Q function
         self.q = q
-        self.q_offline = q.eval()
+        self.q_offline = deepcopy(q.eval())
         self.action_space = action_space
         self.state_space = state_space
         self.reward_space = reward_space
@@ -93,9 +94,9 @@ class Agent:
             print("Best Action: ", best_action)
         return best_action
 
-    def train_q(self, states, actions, rewards, next_states):
+    def train_q(self, states, actions, rewards, next_states, dones):
         max_expected = self.q_offline.max_expected_reward(next_states)
-        return self.q.train(states, actions, rewards, max_expected)
+        return self.q.train(states, actions, rewards, max_expected, dones)
 
     def update_offline(self):
         self.q_offline.update(self.q)
