@@ -103,7 +103,7 @@ class DnnQFunction(BaseQFunction):
             param.grad.data.clamp_(-1, 1)
         self.optimizer.step()
 
-        return loss
+        return loss.detach().item()
 
     def copy_weights(self):
         return self.arch.state_dict()

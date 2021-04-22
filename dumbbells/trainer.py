@@ -23,14 +23,14 @@ class Trainer:
             self._play_episode()
 
     def _play_episode(self):
-        prev_state = self.dataset.reset()
+        prev_state = torch.tensor([self.dataset.reset()], dtype=torch.float32)
         max_reward = None
         done = False
 
         for time_step in count():
-            action = self.agent.action(torch.tensor([prev_state], dtype=torch.float32))
+            action = self.agent.action(prev_state.unsqueeze(0))
             action = action[0][0].item()
-            state, reward, done = self.dataset.step(action)
+            prev_state, reward, done = self.dataset.step(action)
 
             if max_reward is None or max_reward < reward:
                 max_reward = reward
@@ -57,10 +57,10 @@ class Trainer:
                 batch = next(dl)
 
             loss = self.agent.train_q(*batch)
+            self.losses.append(loss)
 
             if ep % self.offline_update:
                 self.agent.update_offline()
 
             self.ep_durations.append(time_steps)
             self.rewards.append(max_reward.item())
-            self.losses.append(loss.item())
