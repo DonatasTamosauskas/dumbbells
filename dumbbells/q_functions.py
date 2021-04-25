@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Union
+from typing import Union, Optional
 
 import torch
 import torch.nn.functional as F
@@ -65,12 +65,13 @@ class DnnQFunction(BaseQFunction):
         self,
         arch: torch.nn.Module,
         gamma: float,
-        optim: Union[torch.optim, None] = None,
+        optim: Optional[torch.optim] = None,
+        lr: Optional[float] = 1e-5,
     ):
         self.arch = arch
         self.gamma = gamma
         self.optimizer = (
-            torch.optim.RMSprop(self.arch.parameters(), lr=1e-5)
+            torch.optim.RMSprop(self.arch.parameters(), lr=lr)
             if optim is None
             else optim
         )
