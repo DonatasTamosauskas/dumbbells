@@ -1,20 +1,26 @@
 import numpy as np
 import gym
 import torch
-from torch.utils.data import Dataset as Ds, DataLoader
+from matplotlib import animation
+import matplotlib.pyplot as plt
+from torch.utils.data import Dataset as Ds
 
 
 class Dataset(Ds):
     """Dataset containing information about the environment"""
 
-    def __init__(self, game, memory_size):
+    def __init__(self, game, memory_size, produce_gif=False):
         """Constructor, with the environment and memory_size specified
 
         Args:
             game: String containing the name of the environment to be created. Must be a valid environment. A list of
                   valid environments can be found at "https://gym.openai.com/envs/#classic_control", or with
                   gym.envs.registry.all()
+
             memory_size: Max images we want to store at any time.
+
+            produce_gif: Optional, allows Dataset to produce a gif of all actions taken on the Dataset if run on
+                  a local machine
 
         Returns: None
         """
@@ -22,6 +28,8 @@ class Dataset(Ds):
         self.env = gym.make(game)
         self.memory_size = memory_size
         self.memory = []
+        self.produce_gif = produce_gif
+        self.frames = []
         self.position = 0
 
         # For the environment "MountainCar-v0", there are 3 actions available:
@@ -75,8 +83,13 @@ class Dataset(Ds):
         self.push_mem(
             prev_state, torch.tensor([action]), reward, self.get_state(), done
         )
-        # Return the result of the action
 
+        # If we initialized this dataset with the capability to produce a gif (only works on local machines!)
+        if self.produce_gif:
+            # Store this frame to produce a gif later on
+            self.frames.append(self.env.render(mode="rgb_array"))
+
+        # Return the result of the action
         return self.get_state(), reward, done
 
     def push_mem(self, prev_state, action, reward, next_state, done):
@@ -84,8 +97,11 @@ class Dataset(Ds):
 
         Args:
             prev_state: The previous state
+
             action: Action that was taken
+
             reward: Reward given for taking that action at that state
+
             next_state: Current state as a result of taking that action
 
         Return: None
@@ -129,4 +145,40 @@ class Dataset(Ds):
         result = self.env.reset()
         # Update the current state space
         self.state_space = torch.tensor(result, dtype=torch.float32)
+
+        # Reset our frames
+        self.frames = []
+
         return result
+
+    def save_frames_as_gif(self, path="./", filename="gym_animation.gif"):
+        """Produces a gif of the every action that has been taken by the agent on the environment from the
+        beginning until called
+
+        Args:
+            path: Optional, file path where the gif will be saved relative to the directory calling this method.
+                Default is the same directory as the caller.
+
+            filename: Optional, file name of the gif to be saved. Default is "gym_animation.gif"
+
+        Returns:
+            None (though it produces a saved gif)
+
+        """
+        self.env.close()
+        # Mess with this to change frame size
+        plt.figure(
+            figsize=(self.frames[0].shape[1] / 72.0, self.frames[0].shape[0] / 72.0),
+            dpi=72,
+        )
+
+        patch = plt.imshow(self.frames[0])
+        plt.axis("off")
+
+        anim = animation.FuncAnimation(
+            plt.gcf(),
+            lambda i: patch.set_data(self.frames[i]),
+            frames=len(self.frames),
+            interval=50,
+        )
+        anim.save(path + filename, writer="imagemagick", fps=60)
