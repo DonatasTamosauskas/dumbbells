@@ -75,12 +75,14 @@ class Dataset(Ds):
         state, reward, done = (
             torch.tensor(state, dtype=torch.float32),
             torch.tensor([reward], dtype=torch.float32),
-            torch.tensor([done]),
+            torch.tensor([done], dtype=torch.bool),
         )
         # Update the state and memory
         self.state_space = state
 
-        self.push_mem(prev_state, torch.tensor([action]), reward, self.get_state())
+        self.push_mem(
+            prev_state, torch.tensor([action]), reward, self.get_state(), done
+        )
 
         # If we initialized this dataset with the capability to produce a gif (only works on local machines!)
         if self.produce_gif:
@@ -88,10 +90,9 @@ class Dataset(Ds):
             self.frames.append(self.env.render(mode="rgb_array"))
 
         # Return the result of the action
-
         return self.get_state(), reward, done
 
-    def push_mem(self, prev_state, action, reward, next_state):
+    def push_mem(self, prev_state, action, reward, next_state, done):
         """Helper function to push an image and label to memory
 
         Args:
@@ -107,7 +108,7 @@ class Dataset(Ds):
         """
         if len(self.memory) < self.memory_size:
             self.memory.append(None)
-        self.memory[self.position] = (prev_state, action, reward, next_state)
+        self.memory[self.position] = (prev_state, action, reward, next_state, done)
         self.position = (self.position + 1) % self.memory_size
 
     def __getitem__(self, idx):

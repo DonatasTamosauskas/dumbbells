@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Union
+from typing import Union, Optional
 
 import torch
 import torch.nn.functional as F
@@ -65,28 +65,36 @@ class DnnQFunction(BaseQFunction):
         self,
         arch: torch.nn.Module,
         gamma: float,
-        optim: Union[torch.optim, None] = None,
+        optim: Optional[torch.optim] = None,
+        lr: Optional[float] = 1e-5,
     ):
         self.arch = arch
         self.gamma = gamma
         self.optimizer = (
-            torch.optim.RMSprop(self.arch.parameters()) if optim is None else optim
+            torch.optim.RMSprop(self.arch.parameters(), lr=lr)
+            if optim is None
+            else optim
         )
 
     def predict(self, states):
+        self.arch.eval()
+
         with torch.no_grad():
             return self.arch(states).max(dim=-1)[1].view(-1, 1)
 
     def max_expected_reward(self, states):
+        self.arch.eval()
+
         with torch.no_grad():
             ans = self.arch(states).max(dim=-1)[0].view(-1, 1)
             return ans
 
-    def train(self, states, actions, rewards, q_next_states):
-        # TODO: Manage the special cases of end states. The pytorch example sets them to 0 value
+    def train(self, states, actions, rewards, q_next_states, dones):
+        self.arch.train()
 
         state_action_values = self.arch(states).gather(1, actions)
         expected_state_action_values = (q_next_states * self.gamma) + rewards
+        expected_state_action_values[dones] = rewards[dones]
 
         loss = F.smooth_l1_loss(state_action_values, expected_state_action_values)
 
@@ -96,7 +104,7 @@ class DnnQFunction(BaseQFunction):
             param.grad.data.clamp_(-1, 1)
         self.optimizer.step()
 
-        return loss
+        return loss.detach().item()
 
     def copy_weights(self):
         return self.arch.state_dict()
