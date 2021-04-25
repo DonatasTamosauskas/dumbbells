@@ -66,14 +66,12 @@ class DnnQFunction(BaseQFunction):
         arch: torch.nn.Module,
         gamma: float,
         optim: Optional[torch.optim] = None,
-        lr: Optional[float] = 1e-5,
+        lr: Optional[float] = 1e-3,
     ):
         self.arch = arch
         self.gamma = gamma
         self.optimizer = (
-            torch.optim.RMSprop(self.arch.parameters(), lr=lr)
-            if optim is None
-            else optim
+            torch.optim.Adam(self.arch.parameters(), lr=lr) if optim is None else optim
         )
 
     def predict(self, states):
@@ -96,7 +94,7 @@ class DnnQFunction(BaseQFunction):
         expected_state_action_values = (q_next_states * self.gamma) + rewards
         expected_state_action_values[dones] = rewards[dones]
 
-        loss = F.smooth_l1_loss(state_action_values, expected_state_action_values)
+        loss = F.mse_loss(state_action_values, expected_state_action_values)
 
         self.optimizer.zero_grad()
         loss.backward()
