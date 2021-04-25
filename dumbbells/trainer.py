@@ -25,7 +25,7 @@ class Trainer:
         self.agent.reset_steps()
 
     def _play_episode(self):
-        prev_state = torch.tensor([self.dataset.reset()], dtype=torch.float32)
+        prev_state = self.dataset.reset()
         max_reward = None
         done = False
 
