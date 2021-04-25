@@ -55,6 +55,9 @@ class Agent:
         if self.verbose:
             print("Agent Initialized\n.................")
 
+    def reset_steps(self):
+        self.steps_done = 0
+
     def random_action(self):
         """Selects a random action from the action_space
         Args: None
@@ -85,10 +88,10 @@ class Agent:
 
         # Checks whether to pick a random action or Q function
         if eps_val < random.random():
-            best_action = self.random_action()
-        else:
             best_action = self.q.predict(current_state)
             self.steps_done += 1
+        else:
+            best_action = self.random_action()
 
         if self.verbose:
             print("Best Action: ", best_action)
