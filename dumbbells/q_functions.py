@@ -59,6 +59,24 @@ class BaseQFunction:
 
         raise NotImplementedError()
 
+    def save_weights(self, path):
+        """Saves model and optimizer weights into a file at the given path
+
+        Args:
+            path: Name of the file the model and optimizer weights will be saved to
+        """
+
+        raise NotImplementedError()
+
+    def load_weights(self, path):
+        """Loads model and optimizer weights given a filename
+
+        Args:
+            path: Name of the files the model and optimizer weights will be loaded from
+        """
+
+        raise NotImplementedError()
+
 
 class DnnQFunction(BaseQFunction):
     def __init__(
@@ -106,6 +124,14 @@ class DnnQFunction(BaseQFunction):
 
     def copy_weights(self):
         return self.arch.state_dict()
+
+    def save_weights(self, path):
+        torch.save(self.arch.state_dict(), path + "_model_weights.model")
+        torch.save(self.optimizer.state_dict(), path + "_optimizer_weights.optimizer")
+
+    def load_weights(self, path):
+        self.arch.load_state_dict(torch.load(path + "_model_weights.model"))
+        self.optimizer.load_state_dict(torch.load(path + "optimizer_weights.optimizer"))
 
     def update(self, q_function: DnnQFunction):
         self.arch.load_state_dict(q_function.copy_weights())
