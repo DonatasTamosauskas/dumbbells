@@ -66,5 +66,7 @@ class Trainer:
             if ep % self.offline_update:
                 self.agent.update_offline()
 
+            if ep % 100 == 0:
+                self.agent.q.save_weights("model/weights" + str(ep))
             self.ep_durations.append(time_steps)
             self.rewards.append(max_reward.item())
