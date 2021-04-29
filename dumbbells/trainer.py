@@ -7,7 +7,9 @@ from tqdm import tqdm
 
 
 class Trainer:
-    def __init__(self, dataset, agent, offline_update=10, batch_size=32):
+    def __init__(
+        self, dataset, agent, offline_update=10, batch_size=32, save_every=100
+    ):
         self.dataset = dataset
         self.agent = agent
         self.offline_update = offline_update
@@ -16,6 +18,7 @@ class Trainer:
         self.ep_durations = []
         self.rewards = []
         self.losses = []
+        self.save_every = save_every
 
     def _pre_fill_memory(self):
         """Pre-fill the memory with random actions"""
@@ -66,7 +69,7 @@ class Trainer:
             if ep % self.offline_update:
                 self.agent.update_offline()
 
-            if ep % 100 == 0:
+            if ep % self.save_every == 0:
                 self.agent.q.save_weights("model/weights" + str(ep))
             self.ep_durations.append(time_steps)
             self.rewards.append(max_reward.item())
