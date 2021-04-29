@@ -30,7 +30,7 @@ class DQN(nn.Module):
 
 
 class FcSimpleDqn(nn.Module):
-    def __init__(self, input_shape, outputs, hidden=32):
+    def __init__(self, input_shape, outputs, hidden=64):
         super().__init__()
         self.hidden = nn.Linear(input_shape, hidden)
         self.head = nn.Linear(hidden, outputs)

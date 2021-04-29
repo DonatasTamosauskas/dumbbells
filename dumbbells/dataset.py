@@ -146,10 +146,7 @@ class Dataset(Ds):
         # Update the current state space
         self.state_space = torch.tensor(result, dtype=torch.float32)
 
-        # Reset our frames
-        self.frames = []
-
-        return result
+        return self.state_space
 
     def save_frames_as_gif(self, path="./", filename="gym_animation.gif"):
         """Produces a gif of the every action that has been taken by the agent on the environment from the

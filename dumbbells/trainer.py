@@ -22,8 +22,10 @@ class Trainer:
         while self.dataset.memory_size > len(self.dataset):
             self._play_episode()
 
+        self.agent.reset_steps()
+
     def _play_episode(self):
-        prev_state = torch.tensor([self.dataset.reset()], dtype=torch.float32)
+        prev_state = self.dataset.reset()
         max_reward = None
         done = False
 
@@ -42,7 +44,9 @@ class Trainer:
         self._pre_fill_memory()
         create_dl = lambda: iter(
             torch.utils.data.DataLoader(
-                self.dataset, batch_size=self.batch_size, shuffle=True
+                self.dataset,
+                batch_size=self.batch_size,
+                shuffle=True,
             )
         )
         dl = create_dl()

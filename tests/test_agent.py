@@ -34,34 +34,6 @@ def test_init():
     assert my_agent.verbose == False
 
 
-def test_q_action():
-    """Tests that action can be taken by Q Function"""
-
-    env = gym.make("MountainCar-v0")
-    state_space = env.observation_space
-    action_space = env.action_space
-    reward_space = [-1, 0]
-
-    eps_start = 0
-    eps_end = 2
-    eps_decay = 1
-
-    current_state = env.reset()
-    my_q = q_functions(current_state)
-    my_agent = Agent(
-        my_q, action_space, state_space, reward_space, eps_start, eps_end, eps_decay
-    )
-
-    for t in range(200):
-        my_action = my_agent.action(current_state).item()
-        assert (my_q.old_state == current_state).all()
-        current_state, reward, done, __ = env.step(my_action)
-        if done:
-            break
-
-    assert my_agent.steps_done == 200
-
-
 def test_random_action():
     """Tests that action can be taken randomly"""
 
