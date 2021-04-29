@@ -127,7 +127,7 @@ class SkipConnNormFcDqn(nn.Module):
 class CnnDqn(nn.Module):
     def __init__(self, input_shape, outputs, hidden=32):
         super().__init__()
-        self.conv1 = nn.Conv1d(1, 16, kernel_size=4)
+        self.conv1 = nn.Conv1d(4, 16, kernel_size=4)
         self.conv2 = nn.Conv1d(16, 32, kernel_size=1)
         self.conv3 = nn.Conv1d(32, 32, kernel_size=1)
         self.conv4 = nn.Conv1d(32, 32, kernel_size=1)
@@ -137,7 +137,7 @@ class CnnDqn(nn.Module):
         self.head = nn.Linear(hidden, outputs)
 
     def forward(self, x):
-        x = F.relu(self.conv1(x.view(-1, 1, 4)))
+        x = F.relu(self.conv1(x))
         x = F.relu(self.conv2(x))
         x = F.relu(self.conv3(x))
         x = F.relu(self.conv4(x))
