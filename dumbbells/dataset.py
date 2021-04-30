@@ -179,3 +179,40 @@ class Dataset(Ds):
             interval=50,
         )
         anim.save(path + filename, writer="imagemagick", fps=60)
+
+
+class HistoryDataset(Dataset):
+    def __init__(self, game, memory_size, history_size=4, produce_gif=False):
+        super().__init__(game, memory_size, produce_gif)
+
+        self.history_size = history_size
+        self.history_buffer = self.reset()
+
+    def reset(self):
+        result = self.env.reset()
+        self.state_space = torch.tensor(
+            [result] * self.history_size, dtype=torch.float32
+        )
+
+        return self.state_space
+
+    def step(self, action):
+        prev_state = self.get_state()
+        state, reward, done, info = self.env.step(action)
+        state, reward, done = (
+            torch.tensor(state, dtype=torch.float32),
+            torch.tensor([reward], dtype=torch.float32),
+            torch.tensor([done], dtype=torch.bool),
+        )
+        # Update the state and memory
+        self.state_space = torch.roll(self.state_space, 1, 0)
+        self.state_space[0] = state
+
+        self.push_mem(
+            prev_state, torch.tensor([action]), reward, self.get_state(), done
+        )
+
+        if self.produce_gif:
+            self.frames.append(self.env.render(mode="rgb_array"))
+
+        return self.get_state(), reward, done
