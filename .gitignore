@@ -130,3 +130,11 @@ dmypy.json
 
 # Poetry
 poetry.lock
+
+# Produced gifs
+*.gif
+
+# Pickled files
+*.pkl
+
+
