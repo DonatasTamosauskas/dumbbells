@@ -4,6 +4,7 @@ from itertools import count
 import torch
 from torch.utils.data import DataLoader
 from tqdm import tqdm
+import time
 
 
 class Trainer:
@@ -70,6 +71,10 @@ class Trainer:
                 self.agent.update_offline()
 
             if ep % self.save_every == 0:
-                self.agent.q.save_weights("model/weights" + str(ep))
+                self.agent.q.save_weights(
+                    "model/weights"
+                    + str(ep)
+                    + str(time.strftime("%H-%M-%S", time.gmtime()))
+                )
             self.ep_durations.append(time_steps)
             self.rewards.append(max_reward.item())

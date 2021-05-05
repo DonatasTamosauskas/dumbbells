@@ -131,7 +131,9 @@ class DnnQFunction(BaseQFunction):
 
     def load_weights(self, path):
         self.arch.load_state_dict(torch.load(path + "_model_weights.model"))
-        self.optimizer.load_state_dict(torch.load(path + "optimizer_weights.optimizer"))
+        self.optimizer.load_state_dict(
+            torch.load(path + "_optimizer_weights.optimizer")
+        )
 
     def update(self, q_function: DnnQFunction):
         self.arch.load_state_dict(q_function.copy_weights())
